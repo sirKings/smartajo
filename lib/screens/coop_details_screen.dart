@@ -1,10 +1,12 @@
 
+import 'package:app/ScheduleGenerator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:app/constants.dart';
 import 'package:app/Models.dart';
+import 'PaymentScreen.dart';
 
 class CoopDetailsScreen extends StatefulWidget {
 
@@ -212,10 +214,14 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
                           ),
                         ),
                         onPressed: () {
-                          setState(() {
-                            _loading = true;
-                          });
-                          joinCoop();
+                          if(localUser.chargeCode == null || localUser.chargeCode.isEmpty){
+                            _chargeAlert();
+                          }else {
+                            setState(() {
+                              _loading = true;
+                            });
+                            joinCoop();
+                          }
                         })
                         : Container(width: 0.0,height: 0.0,)
                   )
@@ -315,10 +321,14 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
                             ),
                           ),
                           onPressed: () {
-                            setState(() {
-                              _loading = true;
-                            });
-                            joinCoop();
+                            if(localUser.chargeCode == null || localUser.chargeCode.isEmpty){
+                              _chargeAlert();
+                            }else {
+                              setState(() {
+                                _loading = true;
+                              });
+                              joinCoop();
+                            }
                           })
                           : Container(width: 0.0,height: 0.0,)
                   )
@@ -355,6 +365,40 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
 
   }
 
+  Future<void> _chargeAlert() async {
+    BuildContext ctx = context;
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Information'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('You need to add payment method before you can create a cooperative'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            FlatButton(
+              child: Text('Cancel'),
+              onPressed: () {
+                Navigator.pop(ctx);
+              },
+            ),
+            FlatButton(
+              child: Text('Add Card'),
+              onPressed: () {
+                Navigator.pushNamed(ctx, PaymentScreen.id);
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   Future joinCoop() async {
 
     print("Joining Coops");
@@ -383,6 +427,17 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
         'position': _members.length
       });
 
+
+      ScheduleGenerator(
+          arguments.coop.startDate,
+          arguments.coop.period,
+          int.parse(arguments.coop.number),
+          arguments.coop.amount,
+          arguments.coop.id,
+          _members.length,
+          arguments.coop.name,
+          localUser.chargeCode
+      ).generateSchedule();
 
       message = "You have joined this cooperative";
         //message = "Cooperative found ${Coop(coop.documents[0].data).name}";

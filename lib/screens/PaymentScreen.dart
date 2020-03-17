@@ -1,5 +1,4 @@
-import 'package:app/screens/create_cooperative_screen.dart';
-import 'package:app/screens/registration_screen.dart';
+
 import 'package:flutter/material.dart';
 import 'package:app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -7,6 +6,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:app/Models.dart';
 import 'package:flutter_paystack/flutter_paystack.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class PaymentScreen extends StatefulWidget {
   static String id = "payment";
@@ -23,7 +24,9 @@ class _PaymentScreenState extends State<PaymentScreen> {
   var _loading = true;
 
   var publicKey = "pk_test_cc549a49b32b8a93ceab29d5c0cbfbe181bdd7e4";
+  var secretKey = "sk_test_29cd1555470991605a58ea724c6648e15d68e528";
 
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
@@ -42,6 +45,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
       child: LoadingOverlay(
         isLoading: _loading,
         child: Scaffold(
+          key: _scaffoldKey,
           appBar: AppBar(
             bottom: TabBar(
               tabs: [
@@ -128,30 +132,72 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<void> saveCardDetails(CheckoutResponse res) async{
     print("Creating Coops");
 
-    var time = DateTime.now().millisecondsSinceEpoch;
+    String chargeCode = await verifyCard(res.reference);
 
-    DocumentReference ref = await _store.collection(Database.CARDS).add({
-      "chargeCode": res.reference,
-      "number": res.card.last4Digits,
-      "creatorName": localUser.name,
-      "creator": myUser.uid,
-      "createdAt": time,
-    });
+    if(chargeCode != null){
+      var time = DateTime.now().millisecondsSinceEpoch;
 
-    await _store.collection(Database.CARDS).document(ref.documentID).updateData({
-      "id": ref.documentID
-    });
+      DocumentReference ref = await _store.collection(Database.CARDS).add({
+        "chargeCode": chargeCode,
+        "number": res.card.last4Digits,
+        "creatorName": localUser.name,
+        "creator": myUser.uid,
+        "createdAt": time,
+      });
 
-    await _store.collection(Database.USERS).document(myUser.uid).collection(Database.CARDS).add({
-      "chargeCode": res.reference,
-      "number": res.card.last4Digits,
-      "creatorName": localUser.name,
-      "creator": myUser.uid,
-      "createdAt": time,
-      "id": ref.documentID
-    });
+      await _store.collection(Database.CARDS).document(ref.documentID).updateData({
+        "id": ref.documentID
+      });
+
+      await _store.collection(Database.USERS).document(myUser.uid).collection(Database.CARDS).add({
+        "chargeCode": chargeCode,
+        "number": res.card.last4Digits,
+        "creatorName": localUser.name,
+        "creator": myUser.uid,
+        "createdAt": time,
+        "id": ref.documentID
+      });
+
+      localUser.chargeCode = chargeCode;
+
+      _store.collection(Database.USERS).document(localUser.id).updateData({
+        'chargeCode': chargeCode
+      });
+
+    }else{
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("Could not get Authorization code, Please use another card")));
+    }
 
     getUserCards();
+  }
+
+
+  Future<String> verifyCard(String ref) async {
+    final http.Response response = await http.get('https://api.paystack.co/transaction/verify/$ref',
+        headers: {
+          "Authorization": "Bearer $secretKey"
+    });
+    if (response.statusCode == 200) {
+      // If the server did return a 201 CREATED response,
+      // then parse the JSON.
+      String chargeCode;
+
+      String status = json.decode(response.body)["data"]["status"];
+
+      print(json.decode(response.body));
+
+      if(status == "success"){
+        chargeCode = json.decode(response.body)["data"]["authorization"]["authorization_code"];
+        return chargeCode;
+      }else{
+        return null;
+      }
+
+    } else {
+      // If the server did not return a 201 CREATED response,
+      // then throw an exception.
+      throw Exception('Failed to load album');
+    }
   }
 
   Future<List<Widget>> getUserCards() async {

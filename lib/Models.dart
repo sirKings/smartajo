@@ -9,6 +9,8 @@ class Coop {
   String id;
   String creatorName;
   String code;
+  String period;
+  String startDate;
 
   Coop(Map map){
     this.name = map["name"];
@@ -19,6 +21,8 @@ class Coop {
     this.createdAt = map["createdAt"];
     this.creatorName = map["creatorName"];
     this.code = map["code"];
+    this.startDate = map["startDate"];
+    this.period = map["period"];
   }
 
   String getAvartar(){
@@ -31,12 +35,18 @@ class LocalUser {
   String email;
   String phone;
   String id;
+  String chargeCode;
 
   LocalUser(Map map){
     this.name = map["name"];
     this.email = map["email"];
     this.phone = map["phone"];
     this.id = map["id"];
+    if(map["chargeCode"] == null){
+      this.chargeCode = "";
+    }else{
+      this.chargeCode = map[chargeCode];
+    }
   }
 
   String getInitiials(){
@@ -82,24 +92,26 @@ class CMember {
 
 class Payment {
 
-  String ref;
-  String creator;
-  int amount;
-  int createdAt;
   String id;
-  String creatorName;
-  String cooperativeId;
+  int amount;
+  int date;
+  String coopId;
+  bool isPaid;
+  String userId;
+  String coopName;
 
   Payment(Map map){
-    this.ref = map["ref"];
     this.id = map["id"];
-    this.creator = map["creator"];
+    this.isPaid = map["isPaid"];
     this.amount = map["amount"];
-    this.createdAt = map["createdAt"];
-    this.creatorName = map["creatorName"];
-    this.cooperativeId = map["cooperativeId"];
+    this.date = map["date"];
+    this.coopId = map["coopId"];
+    this.userId = map["userId"];
+    this.coopName = map["coopName"];
   }
 }
+
+
 
 class CardP {
 

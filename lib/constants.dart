@@ -66,10 +66,14 @@ class Database {
   static String CODE = "code";
   static String MEMBERS = "members";
   static String COOPSID = "coopId";
+  static String COLLECTION = "collections";
 }
 
 class Constants {
   static String FIRST_TIMER = "firstTimer";
+  static String D = "Daily";
+  static String W = "Weekly";
+  static String M = "Monthly";
 }
 
 class Colours {

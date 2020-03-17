@@ -1,8 +1,7 @@
 
-import 'dart:io';
-
 import 'package:app/screens/JoinCoopScreen.dart';
 import 'package:app/screens/PaymentScreen.dart';
+import 'package:app/screens/collection_screen.dart';
 import 'package:app/screens/create_cooperative_screen.dart';
 import 'package:app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -141,21 +140,74 @@ class _ChatScreenState extends State<ChatScreen> {
                       ? Container(
                           padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
                           child: Text(
-                            "You have not made any payment yet",
+                            "You do not have any payment yet",
                             textAlign: TextAlign.center,
                           ),
                         )
                       : ListView.builder(
+                          padding: EdgeInsets.fromLTRB(0, 10, 0, 70),
                           itemBuilder: (BuildContext context, int index) {
-                            var coop = _coops[index];
+                            var coop = _payments[index];
 
-                            return ListTile(
-                              title: Text(coop.name),
-                              subtitle: Text('Created by ${coop.creatorName}'),
-                              onTap: () => onCoopTapped(coop),
+                            return Container(
+                              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                              height: 61.0,
+                              child: Column(
+                                children: <Widget>[
+                                  Row(
+                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                    crossAxisAlignment: CrossAxisAlignment.center,
+                                    children: <Widget>[
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            coop.coopName,
+                                            style: TextStyle(
+                                                color: Colours.primary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 20
+                                            ),
+                                          ),
+
+                                          Text(
+                                            getDate(coop.date),
+                                            style: TextStyle(
+                                                color: Colours.primary,
+                                                fontWeight: FontWeight.normal,
+                                                fontSize: 15
+                                            ),
+                                          )
+                                        ],
+
+                                      ),
+                                      Column(
+                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: <Widget>[
+                                          Text(
+                                            "NGN${coop.amount}",
+                                          ),
+
+                                          Text(
+                                            coop.isPaid ? "Paid" : "Not paid yet",
+
+                                          )
+                                        ],
+
+                                      )
+                                    ],
+                                  ),
+                                  Divider(
+                                    color: Colors.black26,
+                                  )
+                                ],
+                              ),
+                              //onTap: () => onCoopTapped(coop),
                             );
                           },
-                          itemCount: _coops.length,
+                          itemCount: _payments.length,
                         ),
                   Positioned(
                     left: 10.0,
@@ -234,6 +286,22 @@ class _ChatScreenState extends State<ChatScreen> {
                   },
                 ),
                 ListTile(
+                  title: Text('Find cooperative'),
+                  onTap: () {
+                    // Update the state of the app
+                    // Then close the drawer
+                    Navigator.pushNamed(context, JoinCoopScreen.id);
+                  },
+                ),
+                ListTile(
+                  title: Text('My Collection'),
+                  onTap: () {
+                    // Update the state of the app
+                    // Then close the drawer
+                    Navigator.pushNamed(context, CollectionScreen.id);
+                  },
+                ),
+                ListTile(
                   title: Text('Signout'),
                   onTap: () {
                     // Update the state of the app
@@ -259,6 +327,12 @@ class _ChatScreenState extends State<ChatScreen> {
     _scaffoldKey.currentState.openEndDrawer();
   }
 
+  String getDate(int time){
+    DateTime date = DateTime.fromMicrosecondsSinceEpoch(time*1000);
+    String dateTime = "${date.day}/${date.month}/${date.year}";
+    return dateTime;
+  }
+
   Future<List<Widget>> getUserCooperatives() async {
     QuerySnapshot querySnapshot = await Firestore.instance
         .collection(Database.USERS)
@@ -277,14 +351,16 @@ class _ChatScreenState extends State<ChatScreen> {
   Future<List<Widget>> getUserPayments(String uid) async {
 
     QuerySnapshot querySnapshot = await Firestore.instance
-        .collection(Database.USERS)
-        .document(uid)
         .collection(Database.PAYMENTS)
+        .where("userId", isEqualTo: localUser.id)
+        .orderBy("date")
         .getDocuments();
 
     listP = querySnapshot.documents;
 
     _payments = listP.map((doc) => Payment(doc.data)).toList();
+
+    print(_payments);
 
     setState(() {
       _loading = false;
