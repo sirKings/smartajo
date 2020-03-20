@@ -35,6 +35,7 @@ class MyApp extends StatelessWidget {
         JoinCoopScreen.id: (context) => JoinCoopScreen(),
         CoopDetailsScreen.id: (context) => CoopDetailsScreen(ModalRoute.of(context).settings.arguments),
         CollectionScreen.id: (context) => CollectionScreen()
+        CollectionDetailsScreen.id: (context) => CollectionDetailsScreen(ModalRoute.of(context).settings.arguments),
       },
     );
   }

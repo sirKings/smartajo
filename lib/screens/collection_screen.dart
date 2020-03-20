@@ -54,7 +54,9 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       var coop = _payments[index];
 
                       return GestureDetector(
-                        onTap: () => print("tapped"+coop.coopName),
+                        onTap: () => {
+                          
+                        },
                         child: Card(
                           child: Container(
                             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -96,13 +98,10 @@ class _CollectionScreenState extends State<CollectionScreen> {
                                         Text(
                                           "NGN${coop.amount}",
                                         ),
-
                                         Text(
                                           coop.isPaid ? "Recieved" : "Not recieved yet",
-
                                         )
                                       ],
-
                                     )
                                   ],
                                 ),

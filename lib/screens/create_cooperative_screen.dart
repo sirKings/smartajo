@@ -1,4 +1,3 @@
-
 import 'dart:math';
 
 import 'package:app/ScheduleGenerator.dart';
@@ -9,7 +8,6 @@ import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:app/constants.dart';
-import 'package:app/Models.dart';
 
 class CreateCoopScreen extends StatefulWidget {
   static String id = "createCoopScreen";

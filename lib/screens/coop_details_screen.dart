@@ -277,14 +277,6 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
                                         fontSize: 20
                                       ),
                                     ),
-//                                    Text(
-//                                      coop.email,
-//                                      style: TextStyle(
-//                                          color: Colours.primary,
-//                                          fontWeight: FontWeight.normal,
-//                                          fontSize: 16
-//                                      ),
-//                                    ),
                                     Text(
                                       "${arguments.coop.getAvartar()} 000${coop.position + 1}",
                                       style: TextStyle(
@@ -417,6 +409,7 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
         "id": arguments.coop.id,
         "code": arguments.coop.code
       });
+
 
       await _store.collection(Database.MEMBERS).add({
         Database.COOPSID: arguments.coop.id,
