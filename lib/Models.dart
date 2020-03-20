@@ -37,16 +37,12 @@ class LocalUser {
   String id;
   String chargeCode;
 
-  LocalUser(Map map){
+  LocalUser(Map map) {
     this.name = map["name"];
     this.email = map["email"];
     this.phone = map["phone"];
     this.id = map["id"];
-    if(map["chargeCode"] == null){
-      this.chargeCode = "";
-    }else{
-      this.chargeCode = map[chargeCode];
-    }
+    this.chargeCode = map["chargeCode"];
   }
 
   String getInitiials(){
@@ -99,6 +95,8 @@ class Payment {
   bool isPaid;
   String userId;
   String coopName;
+  String email;
+  String chargeCode;
 
   Payment(Map map){
     this.id = map["id"];
@@ -108,6 +106,8 @@ class Payment {
     this.coopId = map["coopId"];
     this.userId = map["userId"];
     this.coopName = map["coopName"];
+    this.email = map["email"];
+    this.chargeCode = map["chargeCode"];
   }
 }
 
@@ -137,4 +137,14 @@ class CoopDetailsPageArgument {
   bool isJoining;
   Coop coop;
 
+}
+
+class Bank {
+  String name;
+  String code;
+
+  Bank(Map map){
+    this.name = map["name"];
+    this.code = map["code"];
+  }
 }

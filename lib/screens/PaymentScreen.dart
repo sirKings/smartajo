@@ -1,4 +1,5 @@
 
+import 'package:app/payment_keys.dart';
 import 'package:flutter/material.dart';
 import 'package:app/constants.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -23,8 +24,6 @@ class _PaymentScreenState extends State<PaymentScreen> {
   List<CardP> _cards = List<CardP>();
   var _loading = true;
 
-  var publicKey = "pk_test_cc549a49b32b8a93ceab29d5c0cbfbe181bdd7e4";
-  var secretKey = "sk_test_29cd1555470991605a58ea724c6648e15d68e528";
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
@@ -32,7 +31,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   void initState() {
     super.initState();
     PaystackPlugin.initialize(
-        publicKey: publicKey);
+        publicKey: PaymentKeys.publicKey);
     getUserCards();
   }
 
@@ -175,7 +174,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
   Future<String> verifyCard(String ref) async {
     final http.Response response = await http.get('https://api.paystack.co/transaction/verify/$ref',
         headers: {
-          "Authorization": "Bearer $secretKey"
+          "Authorization": "Bearer ${PaymentKeys.secretKey}"
     });
     if (response.statusCode == 200) {
       // If the server did return a 201 CREATED response,

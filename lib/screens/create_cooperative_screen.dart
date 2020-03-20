@@ -97,6 +97,9 @@ class MyCustomFormState extends State<MyCustomForm> {
   }
 
   Future<void> _chargeAlert() async {
+
+    print(localUser.email);
+
     BuildContext ctx = context;
     return showDialog<void>(
       context: context,

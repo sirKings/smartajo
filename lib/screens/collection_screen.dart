@@ -1,4 +1,5 @@
 import 'package:app/ScheduleGenerator.dart';
+import 'package:app/screens/CollectionDetailScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/widgets.dart';
@@ -54,9 +55,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
                       var coop = _payments[index];
 
                       return GestureDetector(
-                        onTap: () => {
-                          
-                        },
+                        onTap: () => collectionTaped(coop),
                         child: Card(
                           child: Container(
                             padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -126,7 +125,7 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 
   Function collectionTaped(Payment p){
-    print("tapped");
+    Navigator.pushNamed(context, CollectionDetailsScreen.id, arguments: p);
   }
 
   Future<List<Widget>> getUserPayments() async {

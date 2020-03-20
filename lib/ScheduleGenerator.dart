@@ -41,10 +41,11 @@ class ScheduleGenerator{
         'date': date.millisecondsSinceEpoch,
         'userId': localUser.id,
         'amount': int.parse(amount),
-        'coopsId': coopId,
+        'coopId': coopId,
         'isPaid': false,
         'coopName': coopName,
-        'chargeCode': chargeCode
+        'chargeCode': chargeCode,
+        'email': localUser.email
       });
 
       _store.collection(Database.PAYMENTS).document(ref.documentID).updateData({
@@ -56,7 +57,7 @@ class ScheduleGenerator{
           'date': date.millisecondsSinceEpoch,
           'userId': localUser.id,
           'amount': int.parse(amount) * memberCount,
-          'coopsId': coopId,
+          'coopId': coopId,
           'isPaid': false,
           'coopName': coopName
         });

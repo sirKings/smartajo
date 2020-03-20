@@ -1,3 +1,4 @@
+import 'package:app/screens/CollectionDetailScreen.dart';
 import 'package:app/screens/JoinCoopScreen.dart';
 import 'package:app/screens/PaymentScreen.dart';
 import 'package:app/screens/chat_screen.dart';
@@ -34,7 +35,7 @@ class MyApp extends StatelessWidget {
         PaymentScreen.id: (context) => PaymentScreen(),
         JoinCoopScreen.id: (context) => JoinCoopScreen(),
         CoopDetailsScreen.id: (context) => CoopDetailsScreen(ModalRoute.of(context).settings.arguments),
-        CollectionScreen.id: (context) => CollectionScreen()
+        CollectionScreen.id: (context) => CollectionScreen(),
         CollectionDetailsScreen.id: (context) => CollectionDetailsScreen(ModalRoute.of(context).settings.arguments),
       },
     );
