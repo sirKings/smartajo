@@ -109,6 +109,10 @@ class Payment {
     this.email = map["email"];
     this.chargeCode = map["chargeCode"];
   }
+
+  bool isDue(){
+    return (this.date < DateTime.now().millisecondsSinceEpoch);
+  }
 }
 
 

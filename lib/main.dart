@@ -4,6 +4,7 @@ import 'package:app/screens/PaymentScreen.dart';
 import 'package:app/screens/chat_screen.dart';
 import 'package:app/screens/collection_screen.dart';
 import 'package:app/screens/create_cooperative_screen.dart';
+import 'package:app/screens/default_cooperatives.dart';
 import 'package:flutter/material.dart';
 import 'package:app/screens/login_screen.dart';
 import 'package:app/screens/registration_screen.dart';
@@ -37,6 +38,7 @@ class MyApp extends StatelessWidget {
         CoopDetailsScreen.id: (context) => CoopDetailsScreen(ModalRoute.of(context).settings.arguments),
         CollectionScreen.id: (context) => CollectionScreen(),
         CollectionDetailsScreen.id: (context) => CollectionDetailsScreen(ModalRoute.of(context).settings.arguments),
+        DefaultCoopsScreen.id: (context) => DefaultCoopsScreen()
       },
     );
   }

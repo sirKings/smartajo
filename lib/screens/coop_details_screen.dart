@@ -2,6 +2,7 @@
 import 'package:app/ScheduleGenerator.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:loading_overlay/loading_overlay.dart';
 import 'package:app/constants.dart';
@@ -73,12 +74,16 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: <Widget>[
                         Container(
-                          child: Text(
-                            "Code: ${arguments.coop.code}",
-                            style: TextStyle(
-                              color: Colours.primary,
-                              fontWeight: FontWeight.bold
+                          child: InkWell(
+                            child: Text(
+                              "Code: ${arguments.coop.code}",
+                              style: TextStyle(
+                                color: Colours.primary,
+                                fontWeight: FontWeight.bold,
+                                  decoration: TextDecoration.underline
+                              ),
                             ),
+                            onTap: () => codeClicked(arguments.coop.code),
                           ),
                         ),
 
@@ -229,76 +234,96 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
               ),
               Stack(
                 children: <Widget>[
-                  _members.isEmpty
-                      ? Container(
-                    padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
-                    child: Text(
-                      "Loading members..",
-                      textAlign: TextAlign.center,
-                    ),
-                  )
-                      : ListView.builder(
-                    itemBuilder: (BuildContext context, int index) {
-                      var coop = _members[index];
 
-                      return Container(
-                        padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
-                        height: 96.0,
-                        child: Column(
-                          children: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.start,
-                              crossAxisAlignment: CrossAxisAlignment.center,
-                              children: <Widget>[
-                                CircleAvatar(
-                                  backgroundColor: Colours.ash,
-                                  radius: 30,
-                                  child: Text(
-                                    coop.getInitiials(),
-                                    style: TextStyle(
-                                      color: Colours.primary,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 25
-                                    ),
-                                  ),
-                                ),
-                                SizedBox(
-                                  width: 10,
-                                ),
-                                Column(
-                                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                  crossAxisAlignment: CrossAxisAlignment.start,
+                  StreamBuilder(
+                      stream: Firestore.instance
+                          .collection(Database.MEMBERS).where(Database.COOPSID, isEqualTo: arguments.coop.id)
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container(
+                            padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                            child: Text(
+                              "Loading members..",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        } else {
+                          List<DocumentSnapshot> items = snapshot.data.documents;
+
+                          items.sort((a,b) => a["position"].compareTo(b["position"]));
+                          return items.isEmpty
+                              ? Container(
+                            padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                            child: Text(
+                              "No members yet",
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                              : ListView.builder(
+                            itemBuilder: (BuildContext context, int index) {
+                              var coop = CMember(items[index].data);
+
+                              return Container(
+                                padding: EdgeInsets.fromLTRB(20, 20, 20, 0),
+                                height: 96.0,
+                                child: Column(
                                   children: <Widget>[
-                                    Text(
-                                      coop.name,
-                                      style: TextStyle(
-                                        color: Colours.primary,
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 20
-                                      ),
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.start,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        CircleAvatar(
+                                          backgroundColor: Colours.ash,
+                                          radius: 30,
+                                          child: Text(
+                                            coop.getInitiials(),
+                                            style: TextStyle(
+                                                color: Colours.primary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 25
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(
+                                          width: 10,
+                                        ),
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              coop.name,
+                                              style: TextStyle(
+                                                  color: Colours.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20
+                                              ),
+                                            ),
+                                            Text(
+                                              "${arguments.coop.getAvartar()} 000${coop.position + 1}",
+                                              style: TextStyle(
+                                                  color: Colours.primary,
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 15
+                                              ),
+                                            )
+                                          ],
+                                        )
+                                      ],
                                     ),
-                                    Text(
-                                      "${arguments.coop.getAvartar()} 000${coop.position + 1}",
-                                      style: TextStyle(
-                                          color: Colours.primary,
-                                          fontWeight: FontWeight.normal,
-                                          fontSize: 15
-                                      ),
+                                    Divider(
+                                      color: Colors.black26,
                                     )
                                   ],
-                                )
-                              ],
-                            ),
-                            Divider(
-                              color: Colors.black26,
-                            )
-                          ],
-                        ),
-                        //onTap: () => onCoopTapped(coop),
-                      );
-                    },
-                    itemCount: _members.length,
-                  ),
+                                ),
+                                //onTap: () => onCoopTapped(coop),
+                              );
+                            },
+                            itemCount: items.length,
+                          );
+                        }}),
+
                   Positioned(
                       left: 10.0,
                       right: 10.0,
@@ -331,6 +356,12 @@ class _CoopDetailsState extends State<CoopDetailsScreen> {
         ),
       ),
     );
+  }
+
+  Function codeClicked(String str){
+    Clipboard.setData(new ClipboardData(text: str));
+    _scaffoldKey.currentState.showSnackBar(
+        new SnackBar(content: new Text("Copied to Clipboard"),));
   }
 
 

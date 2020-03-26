@@ -35,7 +35,7 @@ class MyAppClient {
         }else{
           print("${_user.uid}");
 
-          _getUserFromDb(_user.uid);
+          await _getUserFromDb(_user.uid);
 
           myUser = _user;
           return _user;
@@ -67,6 +67,7 @@ class Database {
   static String MEMBERS = "members";
   static String COOPSID = "coopId";
   static String COLLECTION = "collections";
+  static String DEFAULT_COOPERATIVES = "default_cooperatives";
 }
 
 class Constants {

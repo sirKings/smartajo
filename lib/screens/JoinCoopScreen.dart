@@ -103,6 +103,46 @@ class MyCustomFormState extends State<MyCustomForm> {
                   ),
                 ),
 
+                TextFormField(
+
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Where do you work';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Where do you work',
+                  ),
+                ),
+
+                TextFormField(
+
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter manager name';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter Manager name',
+                  ),
+                ),
+
+                TextFormField(
+
+                  validator: (value) {
+                    if (value.isEmpty) {
+                      return 'Enter manager number';
+                    }
+                    return null;
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Enter Manager number',
+                  ),
+                  keyboardType: TextInputType.number,
+                ),
+
                 Padding(
                   padding: EdgeInsets.symmetric(vertical: 16.0),
                   child: Material(

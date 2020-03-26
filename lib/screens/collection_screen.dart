@@ -125,7 +125,11 @@ class _CollectionScreenState extends State<CollectionScreen> {
   }
 
   Function collectionTaped(Payment p){
-    Navigator.pushNamed(context, CollectionDetailsScreen.id, arguments: p);
+    if(p.isDue()){
+      Navigator.pushNamed(context, CollectionDetailsScreen.id, arguments: p);
+    }else{
+      _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text("This collection is not due yet"),));
+    }
   }
 
   Future<List<Widget>> getUserPayments() async {

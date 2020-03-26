@@ -1,8 +1,11 @@
 
+import 'dart:math';
+
 import 'package:app/screens/JoinCoopScreen.dart';
 import 'package:app/screens/PaymentScreen.dart';
 import 'package:app/screens/collection_screen.dart';
 import 'package:app/screens/create_cooperative_screen.dart';
+import 'package:app/screens/default_cooperatives.dart';
 import 'package:app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:app/constants.dart';
@@ -20,31 +23,25 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
   var _auth = FirebaseAuth.instance;
+  var _store = Firestore.instance;
   List<DocumentSnapshot> list;
   List<DocumentSnapshot> listP;
   List<Coop> _coops = List<Coop>();
   List<Payment> _payments = List<Payment>();
   var _loading = true;
 
-  var name = "";
-  var email = "";
-  var initials = "";
+  var name = localUser.name;
+  var email = localUser.email;
+  var initials = localUser.getInitiials();
+  var uid = localUser.id;
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   @override
   void initState() {
     super.initState();
-    MyAppClient().getCurrentUser().whenComplete(() {
-      getUserCooperatives().whenComplete(() {
-        setState(() {
-          name = localUser.name;
-          email = localUser.email;
-          initials = localUser.getInitiials();
-        });
-      });
-    });
 
+    setupDefault();
   }
 
   @override
@@ -81,40 +78,60 @@ class _ChatScreenState extends State<ChatScreen> {
             children: [
               Stack(
                 children: <Widget>[
-                  _coops.isEmpty
-                      ? Container(
-                          padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
-                          child: Text(
-                            "You don't belong to any cooperative yet",
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
-                          itemBuilder: (BuildContext context, int index) {
-                            var coop = _coops[index];
-                            return ListTile(
-                              isThreeLine: true,
-                              leading: CircleAvatar(
-                                child: Text(
-                                  coop.getAvartar(),
-                                  style: TextStyle(
-                                      color: Colours.primary
-                                  ),
-                                ),
-                                backgroundColor: Colours.ash,
-                              ),
-                              title: Text(coop.name),
-                              subtitle: Text('Created by ${coop.creatorName} \n NGN${coop.amount}.00'),
-                              trailing: Text(
-                                  "Code: ${coop.code}"
-                              ),
-                              onTap: () => onCoopTapped(coop),
-                            );
 
-                          },
-                          itemCount: _coops.length,
+                StreamBuilder(
+                    stream: Firestore.instance
+                        .collection(Database.USERS)
+                        .document(uid)
+                        .collection(Database.COOPERATIVES)
+                        .snapshots(),
+                    builder: (context, snapshot) {
+                    if (!snapshot.hasData) {
+                      return Container(
+                        padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                        child: Text(
+                          "Loading..",
+                          textAlign: TextAlign.center,
                         ),
+                      );
+                    } else {
+                        List<DocumentSnapshot> items = snapshot.data.documents;
+
+                      return items.isEmpty
+                          ? Container(
+                        padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                        child: Text(
+                          "You don't belong to any cooperative yet",
+                          textAlign: TextAlign.center,
+                        ),
+                      )
+                          :  ListView.builder(
+                        padding: EdgeInsets.fromLTRB(0, 0, 0, 60),
+                        itemBuilder: (BuildContext context, int index) {
+                          var coop = Coop(items[index].data);
+                          return ListTile(
+                            isThreeLine: true,
+                            leading: CircleAvatar(
+                              child: Text(
+                                coop.getAvartar(),
+                                style: TextStyle(
+                                    color: Colours.primary
+                                ),
+                              ),
+                              backgroundColor: Colours.ash,
+                            ),
+                            title: Text(coop.name),
+                            subtitle: Text('Created by ${coop.creatorName} \n NGN${coop.amount}.00'),
+                            trailing: Text(
+                                "Code: ${coop.code}"
+                            ),
+                            onTap: () => onCoopTapped(coop),
+                          );
+
+                        },
+                        itemCount: items.length,
+                      );
+                    }}),
                   Positioned(
                     left: 10.0,
                     right: 10.0,
@@ -136,79 +153,99 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               Stack(
                 children: <Widget>[
-                  _payments.isEmpty
-                      ? Container(
-                          padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
-                          child: Text(
-                            "You do not have any payment yet",
-                            textAlign: TextAlign.center,
-                          ),
-                        )
-                      : ListView.builder(
-                          padding: EdgeInsets.fromLTRB(0, 10, 0, 70),
-                          itemBuilder: (BuildContext context, int index) {
-                            var coop = _payments[index];
 
-                            return Container(
-                              padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-                              height: 61.0,
-                              child: Column(
-                                children: <Widget>[
-                                  Row(
-                                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                                    crossAxisAlignment: CrossAxisAlignment.center,
-                                    children: <Widget>[
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            coop.coopName,
-                                            style: TextStyle(
-                                                color: Colours.primary,
-                                                fontWeight: FontWeight.bold,
-                                                fontSize: 20
+                  StreamBuilder(
+                      stream: Firestore.instance
+                          .collection(Database.PAYMENTS)
+                          .where("userId", isEqualTo: uid)
+                          .orderBy("date")
+                          .snapshots(),
+                      builder: (context, snapshot) {
+                        if (!snapshot.hasData) {
+                          return Container(
+                            padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                            child: Text(
+                              "Loading..",
+                              textAlign: TextAlign.center,
+                            ),
+                          );
+                        } else {
+                          List<DocumentSnapshot> items = snapshot.data.documents;
+
+                          return items.isEmpty
+                              ? Container(
+                            padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
+                            child: Text(
+                              "You do not have any payment yet",
+                              textAlign: TextAlign.center,
+                            ),
+                          )
+                              :  ListView.builder(
+                            padding: EdgeInsets.fromLTRB(0, 20, 0, 60),
+                            itemBuilder: (BuildContext context, int index) {
+                              var coop = Payment(items[index].data);
+                              return Container(
+                                padding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                                height: 61.0,
+                                child: Column(
+                                  children: <Widget>[
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: <Widget>[
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              coop.coopName,
+                                              style: TextStyle(
+                                                  color: Colours.primary,
+                                                  fontWeight: FontWeight.bold,
+                                                  fontSize: 20
+                                              ),
                                             ),
-                                          ),
 
-                                          Text(
-                                            getDate(coop.date),
-                                            style: TextStyle(
-                                                color: Colours.primary,
-                                                fontWeight: FontWeight.normal,
-                                                fontSize: 15
+                                            Text(
+                                              getDate(coop.date),
+                                              style: TextStyle(
+                                                  color: Colours.primary,
+                                                  fontWeight: FontWeight.normal,
+                                                  fontSize: 15
+                                              ),
+                                            )
+                                          ],
+
+                                        ),
+                                        Column(
+                                          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: <Widget>[
+                                            Text(
+                                              "NGN${coop.amount}",
                                             ),
-                                          )
-                                        ],
 
-                                      ),
-                                      Column(
-                                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                                        crossAxisAlignment: CrossAxisAlignment.start,
-                                        children: <Widget>[
-                                          Text(
-                                            "NGN${coop.amount}",
-                                          ),
+                                            Text(
+                                              coop.isPaid ? "Paid" : "Not paid yet",
 
-                                          Text(
-                                            coop.isPaid ? "Paid" : "Not paid yet",
+                                            )
+                                          ],
 
-                                          )
-                                        ],
+                                        )
+                                      ],
+                                    ),
+                                    Divider(
+                                      color: Colors.black26,
+                                    )
+                                  ],
+                                ),
+                                //onTap: () => onCoopTapped(coop),
+                              );
+                            },
+                            itemCount: items.length,
+                          );
+                        }}),
 
-                                      )
-                                    ],
-                                  ),
-                                  Divider(
-                                    color: Colors.black26,
-                                  )
-                                ],
-                              ),
-                              //onTap: () => onCoopTapped(coop),
-                            );
-                          },
-                          itemCount: _payments.length,
-                        ),
                   Positioned(
                     left: 10.0,
                     right: 10.0,
@@ -290,7 +327,7 @@ class _ChatScreenState extends State<ChatScreen> {
                   onTap: () {
                     // Update the state of the app
                     // Then close the drawer
-                    Navigator.pushNamed(context, JoinCoopScreen.id);
+                    Navigator.pushNamed(context, DefaultCoopsScreen.id);
                   },
                 ),
                 ListTile(
@@ -333,42 +370,41 @@ class _ChatScreenState extends State<ChatScreen> {
     return dateTime;
   }
 
-  Future<List<Widget>> getUserCooperatives() async {
-    QuerySnapshot querySnapshot = await Firestore.instance
-        .collection(Database.USERS)
-        .document(myUser.uid)
-        .collection(Database.COOPERATIVES)
-        .getDocuments();
-
-    list = querySnapshot.documents;
-
-    _coops = list.map((doc) => Coop(doc.data))
-    .toList();
-
-    getUserPayments(myUser.uid);
-  }
-
-  Future<List<Widget>> getUserPayments(String uid) async {
-
-    QuerySnapshot querySnapshot = await Firestore.instance
-        .collection(Database.PAYMENTS)
-        .where("userId", isEqualTo: localUser.id)
-        .orderBy("date")
-        .getDocuments();
-
-    listP = querySnapshot.documents;
-
-    _payments = listP.map((doc) => Payment(doc.data)).toList();
-
-    print(_payments);
-
-    setState(() {
-      _loading = false;
-    });
-  }
 
   Function signout(){
     _auth.signOut();
     Navigator.pushReplacementNamed(context, LoginScreen.id);
+  }
+
+  Future setupDefault() async {
+    for(int i = 0; i < 10; i++){
+      DocumentReference ref =
+      await _store.collection(Database.DEFAULT_COOPERATIVES).add({
+        "name": "Pool$i",
+        "number": "10",
+        "creatorName": "Admin",
+        "amount": "10000",
+        "creator": "Admin",
+        "createdAt": DateTime.now().millisecondsSinceEpoch,
+        "code": _getCode(DateTime.now().millisecondsSinceEpoch).toUpperCase(),
+        "period": "Weekly",
+        "startDate": "22/4/2020"
+      });
+
+      await _store
+          .collection(Database.DEFAULT_COOPERATIVES)
+          .document(ref.documentID)
+          .updateData({"id": ref.documentID});
+    }
+  }
+
+  String _getCode(int time) {
+    var chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+    Random rnd = Random(time);
+    String result = "";
+    for (var i = 0; i < 8; i++) {
+      result += chars[rnd.nextInt(chars.length)];
+    }
+    return result;
   }
 }

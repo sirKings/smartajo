@@ -143,130 +143,176 @@ class MyCustomFormState extends State<MyCustomForm> {
         key: _scaffoldKey,
         body: Padding(
           padding: EdgeInsets.fromLTRB(20, 40, 20, 20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: <Widget>[
-                TextFormField(
-                  onChanged: (value) {
-                    name = value;
-                  },
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter a name for your Cooperative';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter Cooperative name',
+          child: ListView(
+            children: <Widget> [
+              Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  TextFormField(
+                    onChanged: (value) {
+                      name = value;
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter a name for your Cooperative';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter Cooperative name',
+                    ),
                   ),
-                ),
-                TextFormField(
-                  onChanged: (value) {
-                    amount = value;
-                  },
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter Amount per contributor';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter Amount per Contributor',
+                  TextFormField(
+                    onChanged: (value) {
+                      amount = value;
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter Amount per contributor';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter Amount per Contributor',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                TextFormField(
-                  onChanged: (value) {
-                    number = value;
-                  },
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please enter number of contributors';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: 'Enter number of contributors',
+                  TextFormField(
+                    onChanged: (value) {
+                      number = value;
+                    },
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please enter number of contributors';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter number of contributors',
+                    ),
+                    keyboardType: TextInputType.number,
                   ),
-                  keyboardType: TextInputType.number,
-                ),
-                TextFormField(
-                  controller: dateCtl,
-                  validator: (value) {
-                    if (value.isEmpty) {
-                      return 'Please select start date';
-                    }
-                    return null;
-                  },
-                  decoration: InputDecoration(
-                    hintText: "Select start date",
+                  TextFormField(
+                    controller: dateCtl,
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Please select start date';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: "Select start date",
+                    ),
+                    onTap: () async {
+                      DateTime date = DateTime.now();
+                      FocusScope.of(context).requestFocus(new FocusNode());
+
+                      date = await showDatePicker(
+                          context: context,
+                          initialDate: date,
+                          firstDate: date,
+                          lastDate: DateTime(2100));
+
+                      dateCtl.text = getDate(date);
+                    },
                   ),
-                  onTap: () async {
-                    DateTime date = DateTime.now();
-                    FocusScope.of(context).requestFocus(new FocusNode());
-
-                    date = await showDatePicker(
-                        context: context,
-                        initialDate: date,
-                        firstDate: date,
-                        lastDate: DateTime(2100));
-
-                    dateCtl.text = getDate(date);
-                  },
-                ),
 
 
-                DropdownButton(
-                  hint: new Text('Select Cooperative period'),
-                  items: periodList,
-                  value: selectedPeriod,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedPeriod = value;
-                    });},
+                  DropdownButton(
+                    hint: new Text('Select Cooperative period'),
+                    items: periodList,
+                    value: selectedPeriod,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPeriod = value;
+                      });},
 
-                  //isExpanded: true,
-                ),
-                Text(
-                  periodWarning,
-                  style: TextStyle(
-                    color: Colors.redAccent,
-                    fontSize: 12
+                    //isExpanded: true,
                   ),
-                ),
-                Padding(
-                  padding: EdgeInsets.symmetric(vertical: 16.0),
-                  child: Material(
-                    color: Color(0xFF1E0763),
-                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
-                    elevation: 5.0,
-                    child: MaterialButton(
-                      onPressed: () {
-                        //Implement registration functionality.
+                  Text(
+                    periodWarning,
+                    style: TextStyle(
+                      color: Colors.redAccent,
+                      fontSize: 12
+                    ),
+                  ),
 
-                        if(localUser.chargeCode == null || localUser.chargeCode.isEmpty){
-                          _chargeAlert();
-                        }else if (_formKey.currentState.validate() && valid()) {
+                  TextFormField(
 
-                          setState(() {
-                            _loading = true;
-                          });
-                          createCoops();
-                        }
-                      },
-                      minWidth: 200.0,
-                      height: 42.0,
-                      child: Text(
-                        'Create Cooperative',
-                        style: kSendButtonTextStyle,
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Where do you work';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Where do you work',
+                    ),
+                  ),
+
+                  TextFormField(
+
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Enter manager name';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter Manager name',
+                    ),
+                  ),
+
+                  TextFormField(
+
+                    validator: (value) {
+                      if (value.isEmpty) {
+                        return 'Enter manager number';
+                      }
+                      return null;
+                    },
+                    decoration: InputDecoration(
+                      hintText: 'Enter Manager number',
+                    ),
+                    keyboardType: TextInputType.number,
+                  ),
+
+
+                  Padding(
+                    padding: EdgeInsets.symmetric(vertical: 16.0),
+                    child: Material(
+                      color: Color(0xFF1E0763),
+                      borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                      elevation: 5.0,
+                      child: MaterialButton(
+                        onPressed: () {
+                          //Implement registration functionality.
+
+                          if(localUser.chargeCode == null || localUser.chargeCode.isEmpty){
+                            _chargeAlert();
+                          }else if (_formKey.currentState.validate() && valid()) {
+
+                            setState(() {
+                              _loading = true;
+                            });
+                            createCoops();
+                          }
+                        },
+                        minWidth: 200.0,
+                        height: 42.0,
+                        child: Text(
+                          'Create Cooperative',
+                          style: kSendButtonTextStyle,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
+            ]
           ),
         ),
       ),
@@ -290,6 +336,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 
   Future createCoops() async {
     print("Creating Coops");
+    bool isSuccess = false;
 
     var time = DateTime.now().millisecondsSinceEpoch;
     var code = _getCode(time).toUpperCase();
@@ -354,6 +401,7 @@ class MyCustomFormState extends State<MyCustomForm> {
 
       _formKey.currentState.reset();
       message = 'Cooperative created successfully';
+      isSuccess = true;
     } catch (e) {
       message = 'Could not create cooperative, Try again later';
     }
@@ -362,6 +410,10 @@ class MyCustomFormState extends State<MyCustomForm> {
       _loading = false;
     });
     _scaffoldKey.currentState.showSnackBar(SnackBar(content: Text(message)));
+    if(isSuccess){
+      Navigator.pop(context);
+    }
+
   }
 
   String _getCode(int time) {

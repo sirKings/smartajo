@@ -162,6 +162,7 @@ class MyCustomFormState extends State<MyCustomForm> {
                     decoration: InputDecoration(
                       hintText: 'Enter Account Number',
                     ),
+                    keyboardType: TextInputType.number,
                   ),
                   DropdownButton(
                     hint: new Text('Select Bank'),

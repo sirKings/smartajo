@@ -1,3 +1,4 @@
+import 'package:app/Models.dart';
 import 'package:app/screens/chat_screen.dart';
 import 'package:app/screens/login_screen.dart';
 import 'package:flutter/material.dart';
@@ -25,13 +26,17 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   var email = "";
   var pass = "";
+  var pass1 = "";
   var phone = "";
   var name = "";
   var _validateName = false;
   var _validatePass = false;
+  var _validatePass1 = false;
   var _validatePhone = false;
   var _validateEmail = false;
   var _loading = false;
+  bool passOscured = true;
+  bool passObscured = true;
 
   @override
   Widget build(BuildContext context) {
@@ -104,11 +109,56 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                   //Do something with the user input.
                   pass = value;
                 },
-                obscureText: true,
+                obscureText: passOscured,
                 decoration: InputDecoration(
                   hintText: 'Enter your password',
                   prefixIcon: Image.asset("images/lock.png"),
                   errorText: _validatePass ? 'Field can not be empty' : null,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      // Based on passwordVisible state choose the icon
+                      passOscured
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Theme.of(context).primaryColorDark,
+                    ),
+                    onPressed: () {
+                      // Update the state i.e. toogle the state of passwordVisible variable
+                      setState(() {
+                        passOscured = !passOscured;
+                      });
+                    },
+                  ),
+                ),
+              ),
+              SizedBox(
+                height: 12.0,
+              ),
+              TextField(
+                onChanged: (value) {
+                  //Do something with the user input.
+                  pass1 = value;
+                },
+                obscureText: passObscured,
+                decoration: InputDecoration(
+                  hintText: 'Confirm your password',
+                  prefixIcon: Image.asset("images/lock.png"),
+                  errorText: _validatePass1 ? 'Passwords does not match' : null,
+                  suffixIcon: IconButton(
+                    icon: Icon(
+                      // Based on passwordVisible state choose the icon
+                      passObscured
+                          ? Icons.visibility
+                          : Icons.visibility_off,
+                      color: Theme.of(context).primaryColorDark,
+                    ),
+                    onPressed: () {
+                      // Update the state i.e. toogle the state of passwordVisible variable
+                      setState(() {
+                        passObscured = !passObscured;
+                      });
+                    },
+                  ),
                 ),
               ),
               SizedBox(
@@ -176,6 +226,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _validatePass = false;
       }
 
+      if(pass != pass1){
+        _validatePass1 = true;
+      }else{
+        _validatePass1 = false;
+      }
+
       if(email.isEmpty){
         _validateEmail = true;
       }else{
@@ -184,7 +240,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     });
 
-    if(!_validatePass && !_validateEmail && !_validatePhone && !_validateName){
+    if(!_validatePass && !_validateEmail && !_validatePhone && !_validateName && !_validatePass1){
 
       setState(() {
         _loading = true;
@@ -199,17 +255,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
             saveUser(user.user.uid);
 
-
-            Navigator.pushNamed(context, ChatScreen.id);
-
       }).catchError((err){
         PlatformException e = err as PlatformException;
+        setState(() {
+          _loading = false;
+        });
+
         _alert(e.message);
       });
 
-      setState(() {
-        _loading = false;
-      });
 
     }
 
@@ -217,16 +271,21 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   Future<bool> saveUser(String id) async {
 
-    return await _store.collection(Database.USERS).document(id).setData
+    await _store.collection(Database.USERS).document(id).setData
         ({
       'name': name,
       'phone': phone,
       'email': email,
       'id': id
-    }).then((onValue) {
-        MyAppClient().getCurrentUser();
-        return true;
     });
+
+    await MyAppClient().getCurrentUser();
+
+    setState(() {
+      _loading = false;
+    });
+
+    Navigator.pushReplacementNamed(context, ChatScreen.id);
 
   }
 
